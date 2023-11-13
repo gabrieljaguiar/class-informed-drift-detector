@@ -15,7 +15,7 @@ warnings.filterwarnings("ignore")
 
 def task(stream_path,):
     size = 10**6
-    window_size = 2500
+    window_size = 1000
     stream = CSVStream("{}".format(stream_path))
     stream_name = os.path.splitext(os.path.basename(stream_path))[0]
     stream_output = os.path.dirname(stream_path).replace("datasets", "output")
@@ -37,7 +37,7 @@ def task(stream_path,):
             classes = sorted(stream_df.iloc[:, -1].unique())
             for c in classes:
                 df = stream_df.loc[stream_df[stream_df.columns[-1]] == c]
-                mfe = MFE(groups=["general", "statistical", "info-theory"], summary=["mean"])
+                mfe = MFE(groups=["general", "statistical"], summary=["mean"])
                 mfe.fit(df.iloc[:, :-1].to_numpy(), df.iloc[:, -1].to_numpy())
                 ft = mfe.extract()
                 ft = dict(zip(ft[0], ft[1]))
@@ -60,7 +60,7 @@ if __name__ == "__main__":
         for file in glob(os.path.join(path, EXT))
     ]
     
-    streams = streams[0:2]
+    #streams = streams[0:2]
     
     for s in streams:
         task(s)
