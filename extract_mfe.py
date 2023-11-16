@@ -18,7 +18,8 @@ def task(stream_path,):
     window_size = 1000
     stream = CSVStream("{}".format(stream_path))
     stream_name = os.path.splitext(os.path.basename(stream_path))[0]
-    stream_output = os.path.dirname(stream_path).replace("datasets", "output")
+    #stream_output = os.path.dirname(stream_path).replace("datasets", "output")
+    stream_output = "./output/"
     print(stream_output)
     exp_name = "{}".format(stream_name)
     print("Running {}...".format(exp_name))
@@ -52,13 +53,15 @@ def task(stream_path,):
             
     return result
 if __name__ == "__main__":
-    PATH = "./datasets/"
-    EXT = "*.csv"
+    PATH = "../locality-class-drift/locality-concept-drift/datasets/datasets/"
+    EXT = "multi_class_*_ds_1_c_10_*.csv"
     streams = [
         file
         for path, subdir, files in os.walk(PATH)
         for file in glob(os.path.join(path, EXT))
     ]
+    #print (streams)
+    #exit(0)
     
     #streams = streams[0:2]
     
