@@ -1,9 +1,9 @@
 from river import base
 from river.base.classifier import Classifier
-from ..drift_detectors import ground_truth
 from river.naive_bayes.base import BaseNB
 from river.naive_bayes.gaussian import GaussianNB
 from river import proba
+from drift_detectors import MultiDetector
 
 class AdaGaussianNB(GaussianNB):
     def __init__(self):
@@ -14,17 +14,23 @@ class AdaGaussianNB(GaussianNB):
             self.gaussians[class_idx][i] = proba.Gaussian
 
 class AdaNB(base.Classifier):
-    def __init__(self, classifier: AdaGaussianNB, drift_detector:  base.drift_detector.DriftDetector) -> None:
-        self.nb: base.Classifier = classifier
+    def __init__(self, classifier: AdaGaussianNB, drift_detector:  MultiDetector) -> None:
+        if classifier:
+            self.nb: base.Classifier = classifier
+        else:
+            self.nb = AdaGaussianNB()
         self.driftDetector = drift_detector
     
     def learn_one(self, x, y) -> Classifier:
         self.nb.learn_one(x,y)
         self.driftDetector.update(x)
         if (self.driftDetector.drift_detected):
-            classes_affected = self.driftDetector.getClassesAffected()
-            for c in classes_affected:
-                self.nb.removeClass(c)
+            if type (self.drift_detector) == MultiDetector:
+                classes_affected = self.driftDetector.getClassesAffected()
+                for c in classes_affected:
+                    self.nb.removeClass(c)
+            else:
+                self.nb = AdaGaussianNB()
     
     def predict_one(self, x: dict, **kwargs) -> base.typing.ClfTarget | None:
         return self.nb.predict_one(x)

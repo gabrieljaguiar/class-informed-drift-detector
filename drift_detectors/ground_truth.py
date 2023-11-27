@@ -1,8 +1,9 @@
 import numbers
 from river.base import DriftDetector
 from typing import List
+from .multi_class_detector import MultiDetector
 
-class TruthDetector (DriftDetector):
+class TruthDetector (MultiDetector):
     def __init__(self, drift_point: int, classes_affected: List):
         super().__init__()
         self.drift_point = drift_point
@@ -15,5 +16,3 @@ class TruthDetector (DriftDetector):
         else:
             self._drift_detected = False
     
-    def getClassesAffected(self):
-        return self.classes_affected
