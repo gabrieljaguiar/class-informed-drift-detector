@@ -71,6 +71,9 @@ class NoDrift(base.DriftDetector):
     def update(self, x: int | float) -> DriftDetector:
         return self
 
+    def reset(self):
+        self.__init__()
+    
     @property
     def drift_detected(self):
         return False
