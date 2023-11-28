@@ -14,7 +14,7 @@ models = [
 
 dds = [
     ("No_drift", NoDrift()),
-    ("ground_truth", TruthDetector(50000, classes_affected=[9,8,7,6,5]))
+    ("ground_truth", TruthDetector(49800, classes_affected=[9,8,7,6,5]))
 ]
 
 
@@ -25,6 +25,8 @@ def task(stream_path, model, dd):
     print(stream_output)
     model_name, model = model
     dd_name, dd = dd
+    dd = dd.clone()
+    model.drift_detector = dd.clone()
     exp_name = "{}_{}_{}".format(model_name, dd_name, stream_name)
     print("Running {}...".format(exp_name))
     exp = Experiment(exp_name, stream_output, model, dd, stream, stream_size=100000)
@@ -36,7 +38,7 @@ def task(stream_path, model, dd):
 
 for model in models:
     PATH = "../locality-class-drift/locality-concept-drift/datasets/datasets/"
-    EXT = "multi_class_*_ds_1_c_10_ca_5_*.csv"
+    EXT = "multi_class_*_ds_1_c_5_ca_3_*.csv"
     streams = [
         file
         for path, subdir, files in os.walk(PATH)

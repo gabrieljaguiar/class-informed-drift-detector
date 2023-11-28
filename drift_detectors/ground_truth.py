@@ -15,4 +15,5 @@ class TruthDetector (MultiDetector):
             self._drift_detected = True
         else:
             self._drift_detected = False
-    
+    def reset(self):
+        self.__init__(self.drift_point, self.classes_affected)
