@@ -1,7 +1,7 @@
 from river import base
 from river.multiclass import OneVsRestClassifier
 from river.base import Classifier
-from ..drift_detectors import NoDrift
+from drift_detectors import NoDrift
 
 class OneVsAllClassifier(OneVsRestClassifier):
     def __init__(self, classifier: Classifier, drift_detector = None):

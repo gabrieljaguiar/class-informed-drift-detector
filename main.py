@@ -10,13 +10,13 @@ from classifiers import AdaNB, OneVsAllClassifier, AdaGaussianNB
 
 models = [
     ("NB_no_retrain", AdaNB(classifier=AdaGaussianNB(), drift_detector=NoDrift())), 
-    ("NB_retrain", AdaNB(classifier=AdaGaussianNB(), drift_detector=TruthDetector(49800), retrain=True)),
-    ("NB_gt", AdaNB(classifier=AdaGaussianNB(), drift_detector=TruthDetector(49800))), 
+    ("NB_retrain", AdaNB(classifier=AdaGaussianNB(), drift_detector=TruthDetector(49800, []), retrain=True)),
+    ("NB_gt", AdaNB(classifier=AdaGaussianNB(), drift_detector=TruthDetector(49800, []))), 
 ]
 
 dds = [
     #("No_drift", NoDrift()),
-    ("ground_truth", TruthDetector(49800))
+    ("ground_truth", TruthDetector(49800, []))
 ]
 
 
@@ -59,7 +59,7 @@ for model in models:
         for file in glob(os.path.join(path, EXT))
     ]
 
-    out = Parallel(n_jobs=1)(
+    out = Parallel(n_jobs=4)(
         delayed(task)(stream, model, dd)
         for stream, dd in itertools.product(streams, dds)
     )
