@@ -10,7 +10,7 @@ class AdaGaussianNB(GaussianNB):
     def __init__(self):
         super().__init__()
     def removeClass (self, class_idx):
-        del self.class_counts[class_idx]
+        #del self.class_counts[class_idx]
         self.gaussians.pop(class_idx)
 
 class AdaNB(base.Classifier):
@@ -28,7 +28,7 @@ class AdaNB(base.Classifier):
         self.nb.learn_one(x,y)
         self.driftDetector.update(x)
         if (self.driftDetector.drift_detected):
-            if len(self.driftDetector.classes_affected) > 0:
+            if (len(self.driftDetector.classes_affected) > 0) and (not self.retrain):
                 classes_affected = self.driftDetector.getClassesAffected()
                 for c in classes_affected:
                     self.nb.removeClass(c)
