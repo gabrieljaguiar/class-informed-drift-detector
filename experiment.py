@@ -31,7 +31,7 @@ class Experiment:
             self.size = self.stream.n_samples
         self.evaluator = MultiClassEvaluator(evaluationWindow, self.stream.n_classes)
         self.evaluationWindow = evaluationWindow
-        self.gracePeriod = 0
+        self.gracePeriod = 200
         self.theta = theta
         self.classProportions: list = [0] * self.stream.n_classes
         if (type(self.model) == HoeffdingAdaptiveTreeClassifier):
