@@ -43,4 +43,3 @@ class InformedDrift(MultiDetector):
             # if drift detected  raise drift alarm, classes affected == y, reset one class classifier plus reset current concept
             pass
         self._drift_detected = False
-h
