@@ -165,3 +165,5 @@ __pycache__/
 *.cpython-38.pyc
 *.pdf
 test_main.py
+generate_streams.py
+test_drift_detector.py

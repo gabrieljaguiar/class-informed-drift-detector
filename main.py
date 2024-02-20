@@ -1,49 +1,54 @@
-from river import tree, drift
+from river import tree, drift, naive_bayes
 from experiment import Experiment
 from joblib import Parallel, delayed
 import itertools
+
+
 from glob import glob
 import os
 from utils.csv import CSVStream
-from drift_detectors import NoDrift, TruthDetector
-from classifiers import AdaNB, OneVsAllClassifier, AdaGaussianNB
 
 models = [
-    ("NB_no_retrain", AdaNB(classifier=AdaGaussianNB(), drift_detector=NoDrift())), 
-    ("NB_retrain", AdaNB(classifier=AdaGaussianNB(), drift_detector=TruthDetector(49800, []), retrain=True)),
-    ("NB_gt", AdaNB(classifier=AdaGaussianNB(), drift_detector=TruthDetector(49800, []))), 
+    ("HT", tree.HoeffdingTreeClassifier()),
+    ("NB", naive_bayes.GaussianNB()),
 ]
 
 dds = [
-    #("No_drift", NoDrift()),
-    ("ground_truth", TruthDetector(49800, []))
+    ("ADWIN", drift.ADWIN()),
 ]
+
+"""dds = [
+    ("ADWIN", ADWINDW()),
+    ("PageHinkley", PHDW()),
+    ("HDDM", drift.binary.HDDM_W()),
+    ("KSWIN", KSWINDW()),
+    ("DDM", drift.binary.DDM()),
+    ("RDDM", RDDM_M(RDDMConfig())),
+    ("STEPD", STEPD_M(STEPDConfig())),
+    ("ECDD", ECDDWT_M(ECDDWTConfig())),
+    ("EDDM", EDDM_M(EDDMConfig())),
+]"""
+
+"""dds = [
+    ("FHDMM", FHDDMDW()),
+    ("FHDMMS", FHDDMSDW()),
+]"""
 
 
 def task(stream_path, model, dd):
     stream = CSVStream("{}".format(stream_path))
     stream_name = os.path.splitext(os.path.basename(stream_path))[0]
-    c_index = stream_name.split("_").index("c")
-    ca_index = stream_name.split("_").index("ca")
-    n_classes = int(stream_name.split("_")[c_index+1])
-    n_classes_aff = int(stream_name.split("_")[ca_index+1])
-    
-    classes_affected = [i for i in range(n_classes-n_classes_aff, n_classes)]
-    
-    stream_output = "./output/"
+    stream_output = os.path.dirname(stream_path).replace("datasets", "output")
     print(stream_output)
     model_name, model = model
     model = model.clone()
     dd_name, dd = dd
     dd = dd.clone()
-    
-    if (type(dd) == TruthDetector):
-        model.driftDetector.classes_affected = classes_affected
-        dd.classes_affected = classes_affected
-    #model.driftDetector = dd.clone()
+    if type(model) == drift.DriftRetrainingClassifier:
+        model.drift_detector = dd.clone()
     exp_name = "{}_{}_{}".format(model_name, dd_name, stream_name)
     print("Running {}...".format(exp_name))
-    exp = Experiment(exp_name, stream_output, model, dd, stream, stream_size=100000)
+    exp = Experiment(exp_name, stream_output, model, dd, stream, stream_size=400000)
 
     exp.run()
 
@@ -51,15 +56,15 @@ def task(stream_path, model, dd):
 
 
 for model in models:
-    PATH = "../locality-class-drift/locality-concept-drift/datasets/datasets/"
-    EXT = "multi_class_*_ds_1_*.csv"
+    PATH = "./datasets/"
+    EXT = "prune_growth_new_branch_*.csv"
     streams = [
         file
         for path, subdir, files in os.walk(PATH)
         for file in glob(os.path.join(path, EXT))
     ]
 
-    out = Parallel(n_jobs=4)(
+    out = Parallel(n_jobs=1)(
         delayed(task)(stream, model, dd)
         for stream, dd in itertools.product(streams, dds)
     )
