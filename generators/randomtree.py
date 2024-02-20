@@ -74,9 +74,10 @@ class RandomTreeMC(RandomTree):
             leaf.class_label = -1
 
     def create_new_node(
-        self, class_1: int, fraction: float = 0.2, overlap: bool = True
+        self, class_1: int, fraction: float = 0.2, overlap: bool = True, seed: float = None
     ):
-        rng_tree = random.Random(self.seed_tree)
+        seed = self.seed_tree if seed == None else seed
+        rng_tree = random.Random(seed)
         population = [
             leaf
             for leaf in self.leafs

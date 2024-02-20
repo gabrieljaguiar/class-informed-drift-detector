@@ -1,4 +1,4 @@
-from river.base import DriftDetector
+from river.base import DriftDetector, DriftAndWarningDetector
 import numpy as np
 from sklearn.svm import OneClassSVM
 import collections
@@ -6,7 +6,7 @@ from pymfe.mfe import MFE
 import pandas as pd
 
 
-class MultiDetector(DriftDetector):
+class MultiDetector(DriftAndWarningDetector):
     def __init__(self):
         super().__init__()
         self.class_affected = []
@@ -17,7 +17,7 @@ class MultiDetector(DriftDetector):
 
 class InformedDrift(MultiDetector):
     def __init__(
-        self, n_classes: int, window_size: int = 100, windows_to_train: int = 10
+        self, n_classes: int, window_size: int = 100, grace_period: int = 5
     ):
         super().__init__()
         self.classifiers = {}
@@ -26,11 +26,23 @@ class InformedDrift(MultiDetector):
         }
         self.current_concept = {key: [] for key in range(0, n_classes)}
         self.window_size = window_size
-        self.windows_to_train = windows_to_train
+        self.grace_period = 5
+        self.predictions ={key: [] for key in range(0, n_classes)}
+        self._features = [ "iq_range.mean", "kurtosis.mean", "mean.mean",
+                             "median.mean", "sd.mean", "t_mean.mean", "eigenvalues.mean"]
+        
+        self.att_max = {key: [] for key in range(0, n_classes)}
+        self.att_min = {key: [] for key in range(0, n_classes)}
+        self.centroid = {key: [] for key in range(0, n_classes)}
+        self.warning = np.zeros(n_classes)
+        self.drift = np.zeros(n_classes)
 
     def update(self, x: np.array, y: int):
         x["class"] = y
         self.windows[y].append(x)
+        if (self.drift.any()):
+            self.drift = np.zeros(len(self.drift))
+        
         if len(self.windows[y]) == self.windows[y].maxlen:
             #print (len(self.windows[y]))
             df = pd.DataFrame(self.windows[y])
@@ -38,23 +50,33 @@ class InformedDrift(MultiDetector):
             mfe.fit(df.iloc[:, :-1].to_numpy(), df.iloc[:, -1].to_numpy())
             ft = mfe.extract()
             ft = dict(zip(ft[0], ft[1]))
-            self.current_concept[y].append(ft)
+            current_window = {key: ft[key] for key in self._features}            
+
+            if len(self.current_concept[y]) > self.grace_period:
+                distance_to_centroid = abs(self.centroid[y] - pd.Series(current_window))
+                if (sum(distance_to_centroid > 2*abs(self.att_max[y] - self.att_min[y])) > 1):
+                    if not self.warning[y]:
+                        self.warning[y] = 1
+                    else:
+                        #for c in range(len(self.current_concept)):
+                        self.current_concept[y].clear()
+                        self.warning[y] = 0
+                        self.drift[y] = 1
+                else:
+                    self.current_concept[y].append(current_window)
+                    self.centroid[y] = pd.DataFrame(self.current_concept[y]).mean()
+                    self.warning[y] = 0
+                    self.drift[y] = 0
+            else:
+                self.current_concept[y].append(current_window)
+                self.centroid[y] = pd.DataFrame(self.current_concept[y]).mean()
+                self.att_max[y] =  pd.DataFrame(self.current_concept[y]).max()
+                self.att_min[y] =  pd.DataFrame(self.current_concept[y]).min()
+                self._drift_detected = False
+                self._warning_detected = False
+                
+            
+
             self.windows[y].clear()
-            #print (self.current_concept[y])
-            # extract features
-            # predict if there is a drift in that class or not
-            # if not add this features to the current concept of that class
-            # if drift detected  raise drift alarm, classes affected == y, reset one class classifier plus reset current concept
-            #pass
-            if (self.classifiers.get(y, None)):
-                array_to_predict = np.array(list(self.current_concept[y][-1].values()))
-                array_to_predict = array_to_predict[~np.isnan(array_to_predict)].reshape(1,-1)
-                #print (array_to_predict)
-                print(self.classifiers[y].predict(array_to_predict))
-            if (len(self.current_concept[y]) > self.windows_to_train): #and (self.classifiers.get(y, None) == None):
-                self.classifiers[y] = OneClassSVM()
-                df = pd.DataFrame(self.current_concept[y]).dropna(axis=1, inplace=False)
-                self.classifiers[y].fit(df)
-                del df
-        
+            
         self._drift_detected = False
