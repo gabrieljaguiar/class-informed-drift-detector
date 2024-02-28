@@ -17,7 +17,7 @@ class MultiDetector(DriftAndWarningDetector):
 
 class InformedDrift(MultiDetector):
     def __init__(
-        self, n_classes: int, window_size: int = 100, grace_period: int = 5
+        self, n_classes: int, alpha:float = 0.2,window_size: int = 100, grace_period: int = 5,
     ):
         super().__init__()
         self.classifiers = {}
@@ -25,9 +25,11 @@ class InformedDrift(MultiDetector):
             key: collections.deque(maxlen=window_size) for key in range(0, n_classes)
         }
         self.current_concept = {key: [] for key in range(0, n_classes)}
+        self.total_concept = {key: [] for key in range(0, n_classes)}
         self.window_size = window_size
-        self.grace_period = 5
+        self.grace_period = grace_period
         self.predictions ={key: [] for key in range(0, n_classes)}
+        self.distance_to_centroid_hist = {key: [] for key in range(0, n_classes)}
         self._features = [ "iq_range.mean", "kurtosis.mean", "mean.mean",
                              "median.mean", "sd.mean", "t_mean.mean", "eigenvalues.mean"]
         
@@ -36,6 +38,7 @@ class InformedDrift(MultiDetector):
         self.centroid = {key: [] for key in range(0, n_classes)}
         self.warning = np.zeros(n_classes)
         self.drift = np.zeros(n_classes)
+        self.alpha = alpha
 
     def update(self, x: np.array, y: int):
         x["class"] = y
@@ -50,11 +53,25 @@ class InformedDrift(MultiDetector):
             mfe.fit(df.iloc[:, :-1].to_numpy(), df.iloc[:, -1].to_numpy())
             ft = mfe.extract()
             ft = dict(zip(ft[0], ft[1]))
-            current_window = {key: ft[key] for key in self._features}            
+            current_window = {key: ft[key] for key in self._features}  
+            #self.current_concept[y].append(current_window)
+            self.total_concept[y].append(current_window)
+            
+            if len(self.centroid[y]) == 0:
+                self.centroid[y] = pd.Series(current_window)
+            
 
             if len(self.current_concept[y]) > self.grace_period:
-                distance_to_centroid = abs(self.centroid[y] - pd.Series(current_window))
-                if (sum(distance_to_centroid > 2*abs(self.att_max[y] - self.att_min[y])) > 1):
+                distance_to_centroid = abs(self.centroid[y] - pd.Series(current_window)) 
+                
+                relative_dif = distance_to_centroid/abs(self.att_max[y][-1] - self.att_min[y][-1])
+                
+                drifted_att = sum(relative_dif > 1 + self.alpha)
+                if (drifted_att > 2):
+                    self.current_concept[y].clear()
+                    self.warning[y] = 0
+                    self.drift[y] = 1
+                elif (drifted_att > 1):
                     if not self.warning[y]:
                         self.warning[y] = 1
                     else:
@@ -67,11 +84,13 @@ class InformedDrift(MultiDetector):
                     self.centroid[y] = pd.DataFrame(self.current_concept[y]).mean()
                     self.warning[y] = 0
                     self.drift[y] = 0
+                self.att_max[y].append(self.att_max[y][-1])
+                self.att_min[y].append(self.att_min[y][-1])
             else:
                 self.current_concept[y].append(current_window)
                 self.centroid[y] = pd.DataFrame(self.current_concept[y]).mean()
-                self.att_max[y] =  pd.DataFrame(self.current_concept[y]).max()
-                self.att_min[y] =  pd.DataFrame(self.current_concept[y]).min()
+                self.att_max[y].append(pd.DataFrame(self.current_concept[y]).max())
+                self.att_min[y].append(pd.DataFrame(self.current_concept[y]).min())
                 self._drift_detected = False
                 self._warning_detected = False
                 

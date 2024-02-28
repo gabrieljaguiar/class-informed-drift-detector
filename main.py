@@ -8,16 +8,29 @@ from glob import glob
 import os
 from utils.csv import CSVStream
 
+from drift_detectors import (
+    RDDM_M,
+    EDDM_M,
+    STEPD_M,
+    ECDDWT_M,
+    ADWINDW,
+    KSWINDW,
+    PHDW,
+    FHDDMDW,
+    FHDDMSDW
+)
+from drift_detectors import ECDDWTConfig, EDDMConfig, RDDMConfig, STEPDConfig
+
 models = [
     ("HT", tree.HoeffdingTreeClassifier()),
     ("NB", naive_bayes.GaussianNB()),
 ]
 
-dds = [
-    ("ADWIN", drift.ADWIN()),
-]
+#dds = [
+#    ("ADWIN", drift.ADWIN()),
+#]
 
-"""dds = [
+dds = [
     ("ADWIN", ADWINDW()),
     ("PageHinkley", PHDW()),
     ("HDDM", drift.binary.HDDM_W()),
@@ -27,12 +40,10 @@ dds = [
     ("STEPD", STEPD_M(STEPDConfig())),
     ("ECDD", ECDDWT_M(ECDDWTConfig())),
     ("EDDM", EDDM_M(EDDMConfig())),
-]"""
+    ("FHDDM", FHDDMDW()),
+    ("FHDDMS", FHDDMSDW()),
+]
 
-"""dds = [
-    ("FHDMM", FHDDMDW()),
-    ("FHDMMS", FHDDMSDW()),
-]"""
 
 
 def task(stream_path, model, dd):
@@ -57,14 +68,14 @@ def task(stream_path, model, dd):
 
 for model in models:
     PATH = "./datasets/"
-    EXT = "prune_growth_new_branch_*.csv"
+    EXT = "*.csv"
     streams = [
         file
         for path, subdir, files in os.walk(PATH)
         for file in glob(os.path.join(path, EXT))
     ]
 
-    out = Parallel(n_jobs=1)(
+    out = Parallel(n_jobs=8)(
         delayed(task)(stream, model, dd)
         for stream, dd in itertools.product(streams, dds)
     )
