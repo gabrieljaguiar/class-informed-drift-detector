@@ -17,7 +17,7 @@ class MultiDetector(DriftAndWarningDetector):
 
 class InformedDrift(MultiDetector):
     def __init__(
-        self, n_classes: int, alpha:float = 0.2,window_size: int = 100, grace_period: int = 5,
+        self, n_classes: int, alpha:float = 0.2,window_size: int = 100, grace_period: int = 5, whole_drift: bool = False
     ):
         super().__init__()
         self.classifiers = {}
@@ -38,6 +38,7 @@ class InformedDrift(MultiDetector):
         self.centroid = {key: [] for key in range(0, n_classes)}
         self.warning = np.zeros(n_classes)
         self.drift = np.zeros(n_classes)
+        self.whole_drift = whole_drift
         self.alpha = alpha
 
     def update(self, x: np.array, y: int):
@@ -68,6 +69,9 @@ class InformedDrift(MultiDetector):
                 
                 drifted_att = sum(relative_dif > 1 + self.alpha)
                 if (drifted_att > 2):
+                    if self.whole_drift:
+                        for c in range (len(self.current_concept.keys())):
+                            self.current_concept[c].clear()
                     self.current_concept[y].clear()
                     self.warning[y] = 0
                     self.drift[y] = 1
