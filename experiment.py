@@ -2,6 +2,7 @@ from river.datasets.base import SyntheticDataset
 from river.base import DriftDetector, Classifier
 from river.tree import HoeffdingAdaptiveTreeClassifier
 from evaluators.multi_class_evaluator import MultiClassEvaluator
+from drift_detectors import InformedDrift
 import pandas as pd
 from tqdm import tqdm
 #from drift_detectors import DDM_OCI, MCADWIN
@@ -52,11 +53,15 @@ class Experiment:
         for i, (x, y) in enumerate(self.stream):
             # print(i)
             if i > self.gracePeriod:
-                self.updateDriftDetector(y, self.model.predict_one(x))
+                if type (self.driftDetector) == InformedDrift:
+                    self.driftDetector.update(x,y)
+                else:
+                    self.updateDriftDetector(y, self.model.predict_one(x))
                 self.evaluator.addResult((x, y), self.model.predict_proba_one(x))
                 if self.driftDetector.drift_detected:
                     self.drifts.append({"idx": i, "alert": 1})
                     drift_detected += 1
+                #print ("{} outside {}".format(i, self.driftDetector._p.get()))
 
                 if (i + 1) % self.evaluationWindow == 0:
                     metric = {
