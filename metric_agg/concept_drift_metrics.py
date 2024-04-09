@@ -60,7 +60,7 @@ for c in classifiers:
             drift_points = [100000, 200000, 300000]
             drifts_undetected  = drift_points
             #print (drifts_undetected)
-            drift_alerts = pd.read_csv("../output/drift_alerts_{}_{}_{}.csv".format(c, dd,stream_name))
+            drift_alerts = pd.read_csv("../output/backup/drift_alerts_{}_{}_{}.csv".format(c, dd,stream_name))
             #print (drift_alerts)
             
             #print (drift_alerts)
@@ -80,19 +80,19 @@ for c in classifiers:
                     fp += 1
                 else:     
                     if (drift_type == "gradual"):
-                        idx_detected -= 10000
+                        idx_detected -= 5000
                     
                     delay = abs(idx_detected - idx)
                     if drift_type == "gradual":
                         if delay < 10000 and idx > idx_detected:
                             avg_delay += delay
                             tp += 1     
-                            idx_detected += 10000
+                            idx_detected += 5000
                             drifts_undetected.remove(idx_detected )
                         else:
                             fp += 1
                     else:
-                        if delay < 1000 and idx > idx_detected:
+                        if delay < 2000 and idx > idx_detected:
                             avg_delay += delay
                             tp += 1     
                             drifts_undetected.remove(idx_detected)
@@ -102,6 +102,7 @@ for c in classifiers:
 
 
             fn = len(drifts_undetected)
+            avg_delay += fn*10000 if drift_type == "gradual" else fn*2000
 
             df_results.append({
                     "stream": stream_name,
@@ -112,7 +113,7 @@ for c in classifiers:
                     "tp": tp,
                     "fp": fp,
                     "fn": fn,
-                    "avg_delay": avg_delay/tp if tp > 0 else 0,
+                    "avg_delay": avg_delay/(tp+fn) if tp > 0 else 0,
                 })
 
 
