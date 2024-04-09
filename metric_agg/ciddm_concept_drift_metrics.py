@@ -50,7 +50,7 @@ for stream_path in streams:
         
     drifts_undetected  = list(itertools.product(drift_points, classes_affected))
     #print (drifts_undetected)
-    drift_alerts = pd.read_csv("../output/alerts_{}.csv".format(stream_name))
+    drift_alerts = pd.read_csv("../output/backup/alerts_{}.csv".format(stream_name))
     stream_df = pd.read_csv(stream_path)
     #print (drift_alerts)
     tp = 0
@@ -58,28 +58,30 @@ for stream_path in streams:
     fp = 0
     avg_delay = 0
     print (stream_name)
-
+    #stream 1 ---- 10000 instances ---- stream 2 10 classes
+    #1000 instances of drifted class
+    #3333 instances of drifted class
     for i, row in drift_alerts.iterrows():
         idx, class_alert = row["idx"], row["class"]
         if class_alert in classes_affected:
             idx_detected = find_closest_drift(drifts_undetected, class_alert, idx)
             
             if (drift_type == "gradual"):
-                idx_detected -= 10000
+                idx_detected -= 5000
             rows = stream_df[(stream_df["10"] == class_alert) & (stream_df.index > idx_detected)]
             delay = len(rows[rows.index < idx])
             #filter_df = stream_df[(stream_df.iloc[:, -1:] == class_alert) ]
             #print (filter_df)
             if drift_type == "gradual":
-                if delay < 2000 and idx > idx_detected:
+                if delay < 5000 and idx > idx_detected:
                     avg_delay += delay
                     tp += 1     
-                    idx_detected += 10000
+                    idx_detected += 5000
                     drifts_undetected.remove((idx_detected, class_alert))
                 else:
                     fp += 1
             else:
-                if delay < 1000 and idx > idx_detected:
+                if delay < 2000 and idx > idx_detected:
                     avg_delay += delay
                     tp += 1     
                     drifts_undetected.remove((idx_detected, class_alert))
@@ -90,6 +92,7 @@ for stream_path in streams:
             fp += 1
 
     fn = len(drifts_undetected)
+    avg_delay += fn*5000 if drift_type == "gradual" else fn*1000
 
     df_results.append(
         {
@@ -99,7 +102,7 @@ for stream_path in streams:
             "tp": tp,
             "fp": fp,
             "fn": fn,
-            "avg_delay": avg_delay/tp if tp > 0 else 0
+            "avg_delay": avg_delay/(tp+fn) if tp > 0 else 0
         }
     )
 
@@ -107,4 +110,4 @@ for stream_path in streams:
     del stream_df
     
 
-pd.DataFrame(df_results).to_csv("results_ciddm.csv", index=None)
+pd.DataFrame(df_results).to_csv("results_ciddm_updated.csv", index=None)
