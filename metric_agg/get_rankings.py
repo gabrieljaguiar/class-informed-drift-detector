@@ -5,12 +5,12 @@ import pandas as pd
 import numpy as np
 
 dd_data = pd.read_csv("./results_dd.csv")
-dd_data_ciddm = pd.read_csv("./results_ciddm.csv")
-dd_data_ciddm["classif"] = "HT"
+dd_data_ciddm = pd.read_csv("./results_ciddm_updated.csv")
+dd_data_ciddm["classif"] = "NB"
 dd_data_ciddm["dd"] = "CIDDM"
 dd_data = pd.concat([dd_data, dd_data_ciddm], axis=0)
 
-dd_data = dd_data[dd_data["classif"]== "HT"]
+dd_data = dd_data[dd_data["classif"]== "NB"]
 
 dd_data = dd_data[dd_data["n_class"] < 20]
 
@@ -27,7 +27,7 @@ rank = dd_data[["stream", "precision", "f1"]].groupby("stream").rank("average", 
 rank["delay"] =  dd_data[["stream", "avg_delay"]].groupby("stream").rank("average")
 
 rank["dd"] = dd_data["dd"]
-rank.groupby(["dd"]).mean().to_csv("ranking_total_ht.csv")
+rank.groupby(["dd"]).mean().to_csv("ranking_total_nb.csv")
 
 rank["n_class"] =dd_data["n_class"]
 rank["drift_type"] =dd_data["drift_type"]
@@ -38,8 +38,8 @@ rank["drift_type"] =dd_data["drift_type"]
 
 
 
-rank.groupby(["dd","n_class","drift_type"]).mean().to_csv("ranking_average_ht.csv")
+rank.groupby(["dd","n_class","drift_type"]).mean().to_csv("ranking_average_nb.csv")
 
 rank["stream"] = dd_data["stream"]
 rank.sort_values(by="stream", inplace=True)
-rank.to_csv("ranking_ht.csv", index=None)
+rank.to_csv("ranking_nb.csv", index=None)

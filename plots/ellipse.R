@@ -4,34 +4,37 @@ library(ggforce)
 library(RColorBrewer)
 library(paletteer)
 
-kappa <- read.csv('Kappa-ranks.csv')
-gmean <- read.csv('G-Mean-ranks.csv')
+data <- read.csv("../metric_agg/ranking_average_nb.csv")
+data <- data[data$drift_type=="gradual",]
 
-kappa_melted = melt(kappa, id.vars=c(1))
-gmean_melted = melt(gmean, id.vars=c(1))
+#kappa <- read.csv('Kappa-ranks.csv')
+#gmean <- read.csv('G-Mean-ranks.csv')
 
-colnames(kappa_melted)[3] = "Kappa"
-colnames(gmean_melted)[3] = "Gmean"
+#kappa_melted = melt(kappa, id.vars=c(1))
+#gmean_melted = melt(gmean, id.vars=c(1))
 
-kappa_melted$Gmean = gmean_melted$Gmean
+#colnames(kappa_melted)[3] = "Kappa"
+#colnames(gmean_melted)[3] = "Gmean"
 
-instance = kappa_melted[1,]
+#kappa_melted$Gmean = gmean_melted$Gmean
+
+#instance = kappa_melted[1,]
 
 colors = as.vector(paletteer_c("grDevices::RdYlGn", 30))
 
 #Comment this when the data is not ranking
-kappa_melted$Kappa = 1 - (kappa_melted$Kappa/ max(kappa_melted$Kappa))
-kappa_melted$Gmean = 1 - (kappa_melted$Gmean/ max(kappa_melted$Gmean))
-kappa_melted$balance = kappa_melted$Kappa * kappa_melted$Gmean
-kappa_melted$Gmean = kappa_melted$Gmean * kappa_melted$Gmean 
-kappa_melted$Kappa = kappa_melted$Kappa * kappa_melted$Kappa
+data$f1 = 1 - (data$f1/ max(data$f1))
+data$delay = 1 - (data$delay/ max(data$delay))
+data$balance = data$f1 * data$delay
+data$f1 = data$f1 * data$f1
+data$delay = data$delay * data$delay
 
-kappa_melted$Ratio <- factor(kappa_melted$Ratio, levels = c(1, 5, 10, 20, 50, 100) )
+data$n_class <- factor(data$n_class, levels = c(3, 5, 10, 15) )
 
-g = ggplot(kappa_melted) + 
-  geom_ellipse(aes(x0 = 0, y0 = 0, a = Kappa, b = Gmean, angle = pi/4, fill=balance)) + 
+g = ggplot(data) + 
+  geom_ellipse(aes(x0 = 0, y0 = 0, a = f1, b = delay, angle = pi/4, fill=balance)) + 
   #scale_fill_continuous(colours=colors) +
-  scale_fill_gradient2(low="red",mid="yellow", high="green", midpoint = 2*median(kappa_melted$balance)) +
+  scale_fill_gradient2(low="red",mid="yellow", high="green", midpoint = 2*median(data$balance)) +
   coord_fixed() +
   theme_bw() + ylab("") + xlab("") +
   theme(panel.grid.major = element_blank(), 
@@ -42,14 +45,14 @@ g = ggplot(kappa_melted) +
         axis.ticks.x = element_blank(),
         axis.ticks.y = element_blank(),
         legend.position = "none") +
-  facet_grid(Ratio ~ variable, switch = "both" ) +
-  ylab("Imbalance ratio") +
+  facet_grid(n_class ~ dd, switch = "both" ) +
+  ylab("# of classes") +
   theme(strip.background = element_blank(),
         strip.text.y.left = element_text(angle=0, size=15 ),
         strip.text.x = element_text(size=11),
         axis.title.y = element_text(size=16)) 
 
-ggsave("BC_SIR_ellipse.pdf", g, width = 24)
+ggsave("NB_gradual_ellipse.pdf", g, width = 12, height=4.5)
 
 #g <- ggplot() + stat_ellipse()
 
