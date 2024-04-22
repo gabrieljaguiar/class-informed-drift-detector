@@ -3,7 +3,21 @@ import os
 import pandas as pd
     
 
-clfs = ["NB_no_retrain", "NB_retrain", "NB_gt"]
+clfs = ["ADWIN",
+    "PageHinkley",
+    "HDDM",
+    "KSWIN",
+    "DDM",
+    "RDDM",
+    "STEPD",
+    "ECDD",
+    "EDDM",
+    "FHDDM",
+    "FHDDMS",
+    "CIDDM",
+    "NO_DRIFT",
+    "GT"
+]
 classes =[2,3,5, 10]
 classes_affected = [[2], [2,3], [2,3,5], [2, 5, 10]]
 
@@ -15,7 +29,7 @@ for clf in clfs:
     for cn in classes:
         c_aff = classes_affected [classes.index(cn)]
         for ca in c_aff:
-            EXT = "{}_ground_truth_multi_class_global_*_ds_1_c_{}_ca_{}_*.csv".format(clf, cn, ca)
+            EXT = "NB_RT_{}_ground_truth_multi_class_global_*_ds_1_c_{}_ca_{}_*.csv".format(clf, cn, ca)
             result_csv = [
                 file
                 for path, subdir, files in os.walk(PATH)
@@ -39,4 +53,4 @@ for clf in clfs:
             
                 df_results.append(df_row)
 
-pd.DataFrame(df_results).to_csv("agg_metrics.csv", index=None)
+pd.DataFrame(df_results).to_csv("nb_agg_metrics.csv", index=None)
