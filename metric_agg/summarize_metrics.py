@@ -92,5 +92,19 @@ for c in classifiers:
                 })
 
 
+df_results = pd.DataFrame(df_results)
 
-pd.DataFrame(df_results).to_csv("results_metrics_ht.csv", index=None)
+avg_df = df_results.drop(["stream", "classif"], axis=1).groupby(["n_class", "drift_type", "dd"]).mean()
+
+avg_df["acc_rank"] = avg_df.groupby(["n_class", "drift_type"])["acc"].rank(ascending=False)
+avg_df["gmean_rank"] = avg_df.groupby(["n_class", "drift_type"])["gmean"].rank(ascending=False)
+avg_df["c1_rank"] = avg_df.groupby(["n_class", "drift_type"])["aff_c1"].rank(ascending=False)
+avg_df = avg_df.reset_index()
+rank_df = avg_df[["dd", "acc_rank", "gmean_rank"]]
+rank_df.groupby("dd").mean().reset_index().to_csv("rank_metrics_ht.csv")
+
+
+avg_df.to_csv("results_metrics_ht_agg.csv", index=None)
+
+#rank.to_csv("results_metrics_ht_rank.csv", index=None)
+#pd.DataFrame(df_results).to_csv("results_metrics_ht.csv", index=None)
