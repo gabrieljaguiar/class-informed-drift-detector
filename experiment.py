@@ -39,7 +39,7 @@ class Experiment:
             self.model.drift_detector = self.driftDetector.clone()
 
     def updateDriftDetector(self, y, y_hat):  # DDM
-        x = 1 if (y == y_hat) else 0
+        x = 0 if (y == y_hat) else 1
         
         self.driftDetector.update(x)
 

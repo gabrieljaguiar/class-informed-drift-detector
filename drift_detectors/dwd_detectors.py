@@ -47,6 +47,7 @@ class FHDDMDW(base.DriftAndWarningDetector):
         self.warning = FHDDM(confidence_level = 0.00001)
     
     def update(self, x) -> DriftDetector:
+        x = 0 if x == 1 else 1
         self.dd.update(x)
         self.warning.update(x)
         
@@ -59,6 +60,7 @@ class FHDDMSDW(base.DriftAndWarningDetector):
         self.warning = FHDDM(confidence_level = 0.00001, short_window_size=20)
         
     def update(self, x) -> DriftDetector:
+        x = 0 if x == 1 else 1
         self.dd.update(x)
         self.warning.update(x)
         
