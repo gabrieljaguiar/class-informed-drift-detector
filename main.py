@@ -47,20 +47,20 @@ models = [
 # ]
 
 dds = [
-    #("ADWIN", ADWINDW()),
+    ("ADWIN", ADWINDW()),
     #("CIDDM", InformedDrift(n_classes=2)),
     #("NO_DRIFT", drift.NoDrift()),
-    #("PageHinkley", PHDW()),
-    #("HDDM", drift.binary.HDDM_W()),
-    #("KSWIN", KSWINDW()),
-    #("DDM", drift.binary.DDM()),
-    #("RDDM", RDDM_M(RDDMConfig())),
-    #("STEPD", STEPD_M(STEPDConfig())),
-    #("ECDD", ECDDWT_M(ECDDWTConfig())),
-    #("EDDM", EDDM_M(EDDMConfig())),
-    #("FHDDM", FHDDMDW()),
-    #("FHDDMS", FHDDMSDW()),
-    ("GT", drift.DummyDriftDetector(t_0=100000))
+    ("PageHinkley", PHDW()),
+    ("HDDM", drift.binary.HDDM_W()),
+    ("KSWIN", KSWINDW()),
+    ("DDM", drift.binary.DDM()),
+    ("RDDM", RDDM_M(RDDMConfig())),
+    ("STEPD", STEPD_M(STEPDConfig())),
+    ("ECDD", ECDDWT_M(ECDDWTConfig())),
+    ("EDDM", EDDM_M(EDDMConfig())),
+    ("FHDDM", FHDDMDW()),
+    ("FHDDMS", FHDDMSDW()),
+    #("GT", drift.DummyDriftDetector(t_0=100000))
 ]
 def task(stream_path, model, dd):
     warnings.filterwarnings("ignore")

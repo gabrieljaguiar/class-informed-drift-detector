@@ -2,7 +2,7 @@ from glob import glob
 import pandas as pd
 import numpy as np
 
-dd_data = pd.read_csv("./results_dd.csv")
+dd_data = pd.read_csv("./results_dd_update.csv")
 dd_data_ciddm = pd.read_csv("./results_ciddm_updated.csv")
 dd_data_ciddm["classif"] = "HT"
 dd_data_ciddm["dd"] = "CIDDM"
@@ -27,5 +27,5 @@ final_df["f1"].fillna(0, inplace=True)
 
 final_df.reset_index(inplace=True)
 
-final_df[final_df["drift_type"] == "gradual"].to_csv("ht_gradual.csv")
-final_df[final_df["drift_type"] == "sudden"].to_csv("ht_sudden.csv")
+final_df[final_df["drift_type"] == "gradual"].to_csv("ht_gradual_utd.csv")
+final_df[final_df["drift_type"] == "sudden"].to_csv("ht_sudden_utd.csv")
