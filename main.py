@@ -26,14 +26,14 @@ import warnings
 
 
 models = [
-    #("HT", tree.HoeffdingTreeClassifier()),
-    # ("NB", naive_bayes.GaussianNB()),
-    #(
-    #    "NB_RT",
-    #    AdaptedDriftRetrainingClassifier(
-    #       model=naive_bayes.GaussianNB(), drift_detector=ADWINDW(), train_in_background=False,
-    #    ),
-    #),
+    ("HT", tree.HoeffdingTreeClassifier()),
+    ("NB", naive_bayes.GaussianNB()),
+    (
+        "NB_RT",
+        AdaptedDriftRetrainingClassifier(
+           model=naive_bayes.GaussianNB(), drift_detector=ADWINDW(), train_in_background=False,
+        ),
+    ),
     (
         "HT_RT",
         AdaptedDriftRetrainingClassifier(
@@ -42,14 +42,10 @@ models = [
     ),
 ]
 
-# dds = [
-#    ("ADWIN", drift.ADWIN()),
-# ]
-
 dds = [
     ("ADWIN", ADWINDW()),
-    #("CIDDM", InformedDrift(n_classes=2)),
-    #("NO_DRIFT", drift.NoDrift()),
+    ("CIDDM", InformedDrift(n_classes=2)),
+    ("NO_DRIFT", drift.NoDrift()),
     ("PageHinkley", PHDW()),
     ("HDDM", drift.binary.HDDM_W()),
     ("KSWIN", KSWINDW()),
@@ -60,7 +56,7 @@ dds = [
     ("EDDM", EDDM_M(EDDMConfig())),
     ("FHDDM", FHDDMDW()),
     ("FHDDMS", FHDDMSDW()),
-    #("GT", drift.DummyDriftDetector(t_0=100000))
+    ("GT", drift.DummyDriftDetector(t_0=100000))
 ]
 def task(stream_path, model, dd):
     warnings.filterwarnings("ignore")
