@@ -5,19 +5,51 @@ Dynamic environments pose significant challenges to machine learning models due 
 
 <table>
   <tr>
+    <td colspan="2"><h3>Average ranking comparison between drift detectors</h3></td>
+  </tr>
+  <tr>
     <td valign="top"><img src="figures/scatter_HT.jpg"></td>
     <td valign="top"><img src="figures/scatter_NB.jpg"></td>
   </tr>
  </table>
 
-## Implementation detailes
+## Implementation details
 
 CIDDM class is implemented in the file `drift_detectors/multi_class_detector.py`.
 The drift detector was implemented in Python 3.8 using river package. 
 
+### How to run
+
+```python
+import numpy as np
+from river.datasets import synth
+
+stream_1 = synth.Agrawal(
+    classification_function=0,
+    seed=42
+)
+
+stream_2 = synth.Agrawal(
+    classification_function=0,
+    seed=42
+)
+
+ciddm = InformedDrift(n_classes=2)
+
+for x, y in stream_1.take(1000):
+    dd.update(x, y)
+
+# Drifting streams
+
+for x, y in stream_2.take(1000):
+    dd.update(x, y)
+    if (dd.drift.any()):
+      print ("Drift detected on instance {} of class {}".format(i, np.where(dd.drift==1)[0][0]))
+```
+
 ## Reference
 
-Manuscript was submitted to Data Mining and Knowledge Discovery journal and pre-print is available at [arxiv](XXXX)
+Manuscript was submitted to Data Mining and Knowledge Discovery journal.
 
 ```
 @misc{aguiar2023local,
