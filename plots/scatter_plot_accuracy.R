@@ -16,13 +16,15 @@ g = g + scale_colour_gradient2(low="green",mid="yellow", high="red", midpoint = 
 g = g + geom_label_repel(aes(label = dd),
                          box.padding   = 0.35, 
                          point.padding = 0.5,
-                         size = 3,
+                         size = 5,
                          segment.color = 'grey50') + theme_bw() 
 
-g = g + theme(panel.grid.major = element_blank(), legend.position = "none", plot.title = element_text(hjust = 0.5)) +
+g = g + theme(panel.grid.major = element_blank(), 
+              legend.position = "none", 
+              plot.title = element_text(hjust = 0.5, size = 18)) +
   #ggtitle("Multi-class experiments - Kappa vs Runtime") + 
-  ylab("G-Mean Rank") + xlab("Accuracy Rank") +
-  scale_y_continuous(limits=c(1,12),breaks=seq(1, 121,by=2)) + 
-  scale_x_continuous(limits=c(1,12),breaks=seq(1, 12,by=2))
+  ylab("Delay Rank") + xlab("F1 Rank") + ggtitle("HT") +
+  scale_y_continuous(limits=c(1,11),breaks=seq(1, 11,by=2)) + 
+  scale_x_continuous(limits=c(1,11),breaks=seq(1, 11,by=2))
 
 ggsave("scatter_acc_HT.pdf", g, width = 8, height = 6.5)

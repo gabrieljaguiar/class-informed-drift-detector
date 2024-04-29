@@ -16,13 +16,15 @@ g = g + scale_colour_gradient2(low="green",mid="yellow", high="red", midpoint = 
 g = g + geom_label_repel(aes(label = dd),
                          box.padding   = 0.35, 
                          point.padding = 0.5,
-                         size = 3,
+                         size = 5,
                          segment.color = 'grey50') + theme_bw() 
 
-g = g + theme(panel.grid.major = element_blank(), legend.position = "none", plot.title = element_text(hjust = 0.5)) +
+g = g + theme(panel.grid.major = element_blank(), 
+              legend.position = "none", 
+              plot.title = element_text(hjust = 0.5, size = 18)) +
   #ggtitle("Multi-class experiments - Kappa vs Runtime") + 
-  ylab("Delay Rank") + xlab("F1 Rank") +
+  ylab("Delay Rank") + xlab("F1 Rank") + ggtitle("NB") +
   scale_y_continuous(limits=c(1,11),breaks=seq(1, 11,by=2)) + 
   scale_x_continuous(limits=c(1,11),breaks=seq(1, 11,by=2))
-
+#g
 ggsave("scatter_NB.pdf", g, width = 8, height = 6.5)
