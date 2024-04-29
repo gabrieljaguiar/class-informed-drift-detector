@@ -3,11 +3,11 @@ library(reshape2)
 library(dplyr)
 library(ggpubr)
 
-stream_name <- "swap_cluster_global_gradual_10.csv"
+stream_name <- "swap_cluster_global_gradual_5.csv"
 
-df_gt <- read.csv(paste0("../output/HT_RT_GT_", stream_name))
+df_gt <- read.csv(paste0("../output/NB_RT_GT_", stream_name))
 df_no_drift <-
-  read.csv(paste0("../output/HT_RT_NO_DRIFT_", stream_name))
+  read.csv(paste0("../output/NB_RT_NO_DRIFT_", stream_name))
 
 df_gt <- df_gt[c("idx", "accuracy", "class_4")]
 df_no_drift <- df_no_drift[c("idx", "accuracy", "class_4")]
@@ -23,14 +23,14 @@ g <- ggplot(df, aes(x = idx, y = accuracy)) +
   geom_line(aes(color = detector)) +
   xlab("Instances") + ylab("Accuracy") +
   geom_point(data=df_point, aes(color=detector, shape=detector),size=2) +
-  scale_color_manual(name = "Detector", values = c("#008837", "#c2a5cf")) +
+  scale_color_manual(name = "Detector", values = c("#008837", "#b00404")) +
   scale_shape_manual(name = "Detector", values = c(19,18)) +
   scale_x_continuous(labels = scales::unit_format()) +
   scale_y_continuous(labels = scales::percent_format()) +
   theme_bw() + theme(legend.position = "top")
 
 g
-ggsave("HT_swap_cluster_gradual_10.pdf", width=5.20, height=3.92)
+ggsave("NB_swap_cluster_gradual_5.pdf", width=5.20, height=3.92)
 #7.6x3.92
 # files <- list.files("../datasets/", pattern="*.csv")
 #
