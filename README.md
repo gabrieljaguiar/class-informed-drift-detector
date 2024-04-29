@@ -52,12 +52,9 @@ for x, y in stream_2.take(1000):
 Manuscript was submitted to Data Mining and Knowledge Discovery journal.
 
 ```
-@misc{aguiar2023local,
+@misc{aguiar2024ciddm,
   author={Aguiar, Gabriel and Cano, Alberto},
   title={CIDDM: Class Informed Concept Drift Detector Method},
   year={2024},
-  eprint={2311.06396},
-  archivePrefix={arXiv},
-  primaryClass={cs.LG}
 }
 ```
